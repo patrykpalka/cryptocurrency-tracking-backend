@@ -25,6 +25,8 @@ public class GlobalExceptionHandler {
 
         ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(message, timestamp, path);
 
+        LOGGER.error("WebClient Error: {} - Path: {}", message, path, e);
+
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponseDTO);
     }
 }
