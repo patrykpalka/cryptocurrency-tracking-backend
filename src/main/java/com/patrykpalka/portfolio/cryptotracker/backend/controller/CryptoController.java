@@ -1,13 +1,11 @@
 package com.patrykpalka.portfolio.cryptotracker.backend.controller;
 
+import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinPriceResponseDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinsListDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CryptoPricesResponseDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.service.CryptoService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -34,5 +32,15 @@ public class CryptoController {
     private ResponseEntity<List<CoinsListDTO>> getCoinsList() {
         List<CoinsListDTO> coinsList = cryptoService.getCoinsList();
         return ResponseEntity.ok(coinsList);
+    }
+
+    @GetMapping("/history/{symbol}")
+    private ResponseEntity<List<CoinPriceResponseDTO>> getHistoricalPriceData(
+            @PathVariable String symbol,
+            @RequestParam String start,
+            @RequestParam String end,
+            @RequestParam(required = false, defaultValue = "usd") String currency
+    ) {
+        return ResponseEntity.ok(cryptoService.getHistoricalPriceData(symbol, start, end, currency));
     }
 }
