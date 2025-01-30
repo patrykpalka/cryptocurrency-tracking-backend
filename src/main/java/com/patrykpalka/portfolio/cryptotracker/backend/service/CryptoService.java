@@ -1,5 +1,6 @@
 package com.patrykpalka.portfolio.cryptotracker.backend.service;
 
+import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinsListDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CryptoPricesResponseDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.MarketDataApiResponseDTO;
 import org.springframework.core.ParameterizedTypeReference;
@@ -37,5 +38,13 @@ public class CryptoService {
                         dto.currentPrice(),
                         currency.toUpperCase()))
                 .collect(Collectors.toList());
+    }
+
+    public List<CoinsListDTO> getCoinsList() {
+        return cryptoApiClient.get()
+                .uri("/coins/list")
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<List<CoinsListDTO>>() {})
+                .block();
     }
 }

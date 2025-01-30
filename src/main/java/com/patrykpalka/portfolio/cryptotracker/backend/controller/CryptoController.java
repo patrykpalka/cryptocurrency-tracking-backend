@@ -1,5 +1,6 @@
 package com.patrykpalka.portfolio.cryptotracker.backend.controller;
 
+import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinsListDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CryptoPricesResponseDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.service.CryptoService;
 import org.springframework.http.ResponseEntity;
@@ -27,5 +28,11 @@ public class CryptoController {
     ) {
         List<CryptoPricesResponseDTO> pricesList = cryptoService.getCryptoPrices(symbols, currency);
         return ResponseEntity.ok(pricesList);
+    }
+
+    @GetMapping("/supported")
+    private ResponseEntity<List<CoinsListDTO>> getCoinsList() {
+        List<CoinsListDTO> coinsList = cryptoService.getCoinsList();
+        return ResponseEntity.ok(coinsList);
     }
 }

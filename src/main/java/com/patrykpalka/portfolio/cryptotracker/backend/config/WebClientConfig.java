@@ -18,6 +18,7 @@ public class WebClientConfig {
         return builder
                 .baseUrl(properties.getBaseUrl())
                 .defaultHeader(properties.getHeaderName(), properties.getApiKey())
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(5 * 1024 * 1024))
                 .build();
     }
 }
