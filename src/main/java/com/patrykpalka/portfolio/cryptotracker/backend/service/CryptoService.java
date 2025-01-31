@@ -1,6 +1,8 @@
 package com.patrykpalka.portfolio.cryptotracker.backend.service;
 
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 public class CryptoService {
 
     private final WebClient cryptoApiClient;
+    private static final Logger LOGGER = LoggerFactory.getLogger(CryptoService.class);
 
     public CryptoService(WebClient cryptoApiClient) {
         this.cryptoApiClient = cryptoApiClient;
@@ -68,12 +71,15 @@ public class CryptoService {
         String urlPathFormat = "/coins/%s/market_chart/range?vs_currency=%s&from=%s&to=%s";
         String urlPath = String.format(urlPathFormat, symbol, currency.toLowerCase(), convertToUnixDate(startDate), convertToUnixDate(endDate));
 
-        CoinPriceResponseApiDTO apiResponse = Optional.ofNullable(cryptoApiClient.get()
+        CoinPriceResponseApiDTO apiResponse = cryptoApiClient.get()
                 .uri(urlPath)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<CoinPriceResponseApiDTO>() {})
-                .block())
-                .orElseThrow();
+                .block();
+
+        if (apiResponse == null || apiResponse.prices() == null) {
+            throw new RuntimeException("Received null or empty response from API");
+        }
 
         List<List<BigDecimal>> dateAndPriceList = apiResponse.prices();
 

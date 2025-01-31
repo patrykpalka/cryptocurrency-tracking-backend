@@ -19,14 +19,23 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(WebClientException.class)
     public ResponseEntity<ErrorResponseDTO> handleWebClientException(WebClientException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.SERVICE_UNAVAILABLE, request, "WebClientException");
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponseDTO> handleRuntimeException(RuntimeException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR, request, "RuntimeException");
+    }
+
+    private ResponseEntity<ErrorResponseDTO> buildErrorResponse(Exception e, HttpStatus status, HttpServletRequest request, String errorType) {
         String message = e.getMessage();
         String timestamp = LocalDateTime.now().toString();
         String path = request.getRequestURI();
 
         ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(message, timestamp, path);
 
-        LOGGER.error("WebClient Error: {} - Path: {}", message, path, e);
+        LOGGER.error("{}: {} - Path: {}", errorType, message, path, e);
 
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponseDTO);
+        return ResponseEntity.status(status).body(errorResponseDTO);
     }
 }
