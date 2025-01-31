@@ -1,10 +1,10 @@
 package com.patrykpalka.portfolio.cryptotracker.backend.dto;
 
-import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public record CoinPriceResponseDTO(
-        String date,
-        BigDecimal price,
+        LocalDate date,
+        float price,
         String currency
 ) {
 }
