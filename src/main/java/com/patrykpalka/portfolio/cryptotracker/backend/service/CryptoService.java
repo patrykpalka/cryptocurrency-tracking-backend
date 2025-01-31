@@ -60,12 +60,12 @@ public class CryptoService {
         LocalDate startDate = LocalDate.parse(start);
         LocalDate endDate = LocalDate.parse(end);
 
-        long daysDifference = ChronoUnit.DAYS.between(startDate, endDate.plusDays(1));
+        long daysDifference = ChronoUnit.DAYS.between(startDate, endDate);
 
         // Specifying data interval to daily is not available in Demo version of CoinGecko API
         // To get daily data we need to exceed 90 days
         if (90 >= daysDifference) {
-            endDate = startDate.plusDays(90);
+            endDate = startDate.plusDays(91);
         }
 
         String urlPathFormat = "/coins/%s/market_chart/range?vs_currency=%s&from=%s&to=%s";
@@ -84,8 +84,8 @@ public class CryptoService {
         List<List<BigDecimal>> dateAndPriceList = apiResponse.prices();
 
         // If days were added before, take only days specified in parameters
-        if (dateAndPriceList.size() > daysDifference) {
-            dateAndPriceList = dateAndPriceList.subList(0, (int) daysDifference);
+        if (dateAndPriceList.size() > daysDifference + 1) {
+            dateAndPriceList = dateAndPriceList.subList(0, (int) daysDifference + 1);
         }
 
         List<CoinPriceResponseDTO> responseList = new ArrayList<>();
@@ -107,7 +107,6 @@ public class CryptoService {
     }
 
     public long convertEpochMillisecondsToEpochDays(long epochMilliseconds) {
-        long msInDay = 86400000L;
-        return Instant.ofEpochMilli(epochMilliseconds).toEpochMilli() / msInDay;
+        return Instant.ofEpochMilli(epochMilliseconds).atZone(ZoneId.of("UTC")).toLocalDate().toEpochDay();
     }
 }
