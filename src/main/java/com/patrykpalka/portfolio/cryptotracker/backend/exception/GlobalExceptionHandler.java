@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.reactive.function.client.WebClientException;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -20,6 +21,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(WebClientException.class)
     public ResponseEntity<ErrorResponseDTO> handleWebClientException(WebClientException e, HttpServletRequest request) {
         return buildErrorResponse(e, HttpStatus.SERVICE_UNAVAILABLE, request, "WebClientException");
+    }
+
+    @ExceptionHandler(DateTimeParseException.class)
+    public ResponseEntity<ErrorResponseDTO> handleDateTimeParseException(DateTimeParseException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR, request, "DateTimeParseException");
     }
 
     @ExceptionHandler(RuntimeException.class)
@@ -34,7 +40,7 @@ public class GlobalExceptionHandler {
 
         ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(message, timestamp, path);
 
-        LOGGER.error("{}: {} - Path: {}", errorType, message, path, e);
+        LOGGER.error("{}: {} - Path: {}", errorType, message, path);
 
         return ResponseEntity.status(status).body(errorResponseDTO);
     }
