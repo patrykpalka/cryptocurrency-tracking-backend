@@ -9,15 +9,15 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.patrykpalka.portfolio.cryptotracker.backend.util.CryptoUtil.*;
 
 @Service
 public class CryptoService {
@@ -93,32 +93,17 @@ public class CryptoService {
         if (dateAndPriceList.size() > daysDifference + 1) {
             dateAndPriceList = dateAndPriceList.subList(0, daysDifference + 1);
             LOGGER.warn("Reverting end date. Final end date: {}",
-                    LocalDate.ofEpochDay(convertEpochMillisecondsToEpochDays(
-                            dateAndPriceList.get(dateAndPriceList.size() - 1).get(0).longValue())));
+                    convertEpochMillisecondsToLocalDate(dateAndPriceList.get(dateAndPriceList.size() - 1).get(0).longValue()));
         }
 
         List<CoinPriceResponseDTO> responseList = new ArrayList<>();
 
         for (List<BigDecimal> dateAndPrice : dateAndPriceList) {
-            LocalDate date = LocalDate.ofEpochDay(convertEpochMillisecondsToEpochDays(dateAndPrice.get(0).longValue()));
+            LocalDate date = convertEpochMillisecondsToLocalDate(dateAndPrice.get(0).longValue());
             float roundedPrice = dateAndPrice.get(1).setScale(2, RoundingMode.HALF_EVEN).floatValue();
             responseList.add(new CoinPriceResponseDTO(date, roundedPrice, currency.toUpperCase()));
         }
 
         return responseList;
-    }
-
-    private long convertToUnixDate(LocalDate date) {
-        return date.atStartOfDay()
-                .atZone(ZoneId.of("UTC"))
-                .toInstant()
-                .getEpochSecond();
-    }
-
-    public long convertEpochMillisecondsToEpochDays(long epochMilliseconds) {
-        return Instant.ofEpochMilli(epochMilliseconds)
-                .atZone(ZoneId.of("UTC"))
-                .toLocalDate()
-                .toEpochDay();
     }
 }
