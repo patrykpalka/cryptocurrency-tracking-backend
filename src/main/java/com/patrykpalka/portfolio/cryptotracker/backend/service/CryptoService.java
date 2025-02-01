@@ -56,10 +56,7 @@ public class CryptoService {
                 .block();
     }
 
-    public List<CoinPriceResponseDTO> getHistoricalPriceData(String symbol, String start, String end, String currency) {
-        LocalDate startDate = LocalDate.parse(start);
-        LocalDate endDate = LocalDate.parse(end);
-
+    public List<CoinPriceResponseDTO> getHistoricalPriceData(String symbol, LocalDate startDate, LocalDate endDate, String currency) {
         int daysDifference = (int) ChronoUnit.DAYS.between(startDate, endDate);
 
         // Specifying data interval to daily is not available in Demo version of CoinGecko API

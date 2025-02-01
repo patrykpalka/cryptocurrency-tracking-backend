@@ -8,10 +8,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.reactive.function.client.WebClientException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.Objects;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -20,21 +23,29 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(WebClientException.class)
     public ResponseEntity<ErrorResponseDTO> handleWebClientException(WebClientException e, HttpServletRequest request) {
-        return buildErrorResponse(e, HttpStatus.SERVICE_UNAVAILABLE, request, "WebClientException");
+        return buildErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE, request, "WebClientException");
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponseDTO> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e, HttpServletRequest request) {
+        if (e.getRequiredType() == LocalDate.class) {
+            String message = "Invalid date format. Please use the format yyyy-MM-dd.";
+            return buildErrorResponse(message, HttpStatus.BAD_REQUEST, request, "MethodArgumentTypeMismatchException");
+        }
+        return buildErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST, request, "MethodArgumentTypeMismatchException");
     }
 
     @ExceptionHandler(DateTimeParseException.class)
     public ResponseEntity<ErrorResponseDTO> handleDateTimeParseException(DateTimeParseException e, HttpServletRequest request) {
-        return buildErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR, request, "DateTimeParseException");
+        return buildErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, request, "DateTimeParseException");
     }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponseDTO> handleRuntimeException(RuntimeException e, HttpServletRequest request) {
-        return buildErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR, request, "RuntimeException");
+        return buildErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, request, "RuntimeException");
     }
 
-    private ResponseEntity<ErrorResponseDTO> buildErrorResponse(Exception e, HttpStatus status, HttpServletRequest request, String errorType) {
-        String message = e.getMessage();
+    private ResponseEntity<ErrorResponseDTO> buildErrorResponse(String message, HttpStatus status, HttpServletRequest request, String errorType) {
         String timestamp = LocalDateTime.now().toString();
         String path = request.getRequestURI();
 

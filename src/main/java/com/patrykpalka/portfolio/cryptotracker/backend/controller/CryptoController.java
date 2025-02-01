@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -40,8 +41,8 @@ public class CryptoController {
     @GetMapping("/history/{symbol}")
     private ResponseEntity<List<CoinPriceResponseDTO>> getHistoricalPriceData(
             @PathVariable String symbol,
-            @RequestParam String start,
-            @RequestParam String end,
+            @RequestParam LocalDate start,
+            @RequestParam LocalDate end,
             @RequestParam(required = false, defaultValue = "usd") String currency
     ) {
         LOGGER.info("Fetching historical price data for symbol: {}, start: {}, end: {}, currency: {}", symbol, start, end, currency);
