@@ -4,6 +4,8 @@ import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinPriceResponseDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinsListDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CryptoPricesResponseDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.service.CryptoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +16,7 @@ import java.util.List;
 public class CryptoController {
 
     private final CryptoService cryptoService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(CryptoController.class);
 
     public CryptoController(CryptoService cryptoService) {
         this.cryptoService = cryptoService;
@@ -41,6 +44,9 @@ public class CryptoController {
             @RequestParam String end,
             @RequestParam(required = false, defaultValue = "usd") String currency
     ) {
-        return ResponseEntity.ok(cryptoService.getHistoricalPriceData(symbol, start, end, currency));
+        LOGGER.info("Fetching historical price data for symbol: {}, start: {}, end: {}, currency: {}", symbol, start, end, currency);
+        List<CoinPriceResponseDTO> pricesList = cryptoService.getHistoricalPriceData(symbol, start, end, currency);
+        LOGGER.info("Successfully fetched {} historical prices", pricesList.size());
+        return ResponseEntity.ok(pricesList);
     }
 }

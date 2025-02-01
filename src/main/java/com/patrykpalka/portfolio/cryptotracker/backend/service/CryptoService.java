@@ -66,10 +66,13 @@ public class CryptoService {
         // To get daily data we need to exceed 90 days
         if (90 >= daysDifference) {
             endDate = startDate.plusDays(91);
+            LOGGER.warn("Adjusted end date to {} due to API limitations (Demo version).", endDate);
         }
 
         String urlPathFormat = "/coins/%s/market_chart/range?vs_currency=%s&from=%s&to=%s";
         String urlPath = String.format(urlPathFormat, symbol, currency.toLowerCase(), convertToUnixDate(startDate), convertToUnixDate(endDate));
+
+        LOGGER.debug("Calling external API: {}", urlPath);
 
         CoinPriceResponseApiDTO apiResponse = cryptoApiClient.get()
                 .uri(urlPath)
@@ -78,14 +81,20 @@ public class CryptoService {
                 .block();
 
         if (apiResponse == null || apiResponse.prices() == null) {
+            LOGGER.error("Received null or empty response from API for symbol: {}", symbol);
             throw new RuntimeException("Received null or empty response from API");
         }
+
+        LOGGER.debug("API response: {}", apiResponse);
 
         List<List<BigDecimal>> dateAndPriceList = apiResponse.prices();
 
         // If days were added before, take only days specified in parameters
         if (dateAndPriceList.size() > daysDifference + 1) {
             dateAndPriceList = dateAndPriceList.subList(0, daysDifference + 1);
+            LOGGER.warn("Reverting end date. Final end date: {}",
+                    LocalDate.ofEpochDay(convertEpochMillisecondsToEpochDays(
+                            dateAndPriceList.get(dateAndPriceList.size() - 1).get(0).longValue())));
         }
 
         List<CoinPriceResponseDTO> responseList = new ArrayList<>();
