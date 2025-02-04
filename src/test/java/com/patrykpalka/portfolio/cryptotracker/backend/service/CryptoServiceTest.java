@@ -113,4 +113,20 @@ class CryptoServiceTest {
                 expectedUnixTimestamp
         ));
     }
+
+    @Test
+    void shouldHandleNullApiResponse() {
+        // Given
+        LocalDate startDate = LocalDate.of(2024, 1, 1);
+        LocalDate endDate = LocalDate.of(2024, 3, 1);
+        String currency = "USD";
+        String symbol = "bitcoin";
+
+        when(responseSpec.bodyToMono(any(ParameterizedTypeReference.class)))
+                .thenReturn(Mono.empty());
+
+        // When & Then
+        assertThrows(RuntimeException.class, () ->
+                cryptoService.getHistoricalPriceData(symbol, startDate, endDate, currency));
+    }
 }
