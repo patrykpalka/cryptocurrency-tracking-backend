@@ -129,4 +129,29 @@ class CryptoServiceTest {
         assertThrows(RuntimeException.class, () ->
                 cryptoService.getHistoricalPriceData(symbol, startDate, endDate, currency));
     }
+
+    @Test
+    void shouldRoundPricesToTwoDecimalPlaces() {
+        // Given
+        LocalDate startDate = LocalDate.of(2024, 1, 1);
+        LocalDate endDate = LocalDate.of(2024, 3, 1);
+        String currency = "EUR";
+        String symbol = "ethereum";
+
+        List<List<BigDecimal>> prices = Arrays.asList(
+                Arrays.asList(BigDecimal.valueOf(1704067200000L), BigDecimal.valueOf(2500.126)), // Should round to 2500.13
+                Arrays.asList(BigDecimal.valueOf(1704153600000L), BigDecimal.valueOf(2600.124))  // Should round to 2600.12
+        );
+
+        CoinPriceResponseApiDTO apiResponse = new CoinPriceResponseApiDTO(prices, null, null);
+        when(responseSpec.bodyToMono(any(ParameterizedTypeReference.class)))
+                .thenReturn(Mono.just(apiResponse));
+
+        // When
+        List<CoinPriceResponseDTO> result = cryptoService.getHistoricalPriceData(symbol, startDate, endDate, currency);
+
+        // Then
+        assertEquals(2500.13f, result.get(0).price());
+        assertEquals(2600.12f, result.get(1).price());
+    }
 }
