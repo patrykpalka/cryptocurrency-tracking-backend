@@ -154,4 +154,27 @@ class CryptoServiceTest {
         assertEquals(2500.13f, result.get(0).price());
         assertEquals(2600.12f, result.get(1).price());
     }
+
+    @Test
+    void shouldReturnCorrectCurrencyInUpperCase() {
+        // Given
+        LocalDate startDate = LocalDate.of(2024, 1, 1);
+        LocalDate endDate = LocalDate.of(2024, 3, 1);
+        String currency = "eur";
+        String symbol = "bitcoin";
+
+        List<List<BigDecimal>> prices = Arrays.asList(
+                Arrays.asList(BigDecimal.valueOf(1704067200000L), BigDecimal.valueOf(45000.00))
+        );
+
+        CoinPriceResponseApiDTO apiResponse = new CoinPriceResponseApiDTO(prices, null, null);
+        when(responseSpec.bodyToMono(any(ParameterizedTypeReference.class)))
+                .thenReturn(Mono.just(apiResponse));
+
+        // When
+        List<CoinPriceResponseDTO> result = cryptoService.getHistoricalPriceData(symbol, startDate, endDate, currency);
+
+        // Then
+        assertEquals("EUR", result.get(0).currency());
+    }
 }
