@@ -78,4 +78,39 @@ class CryptoServiceTest {
         assertEquals(45000.00f, result.get(0).price());
         assertEquals("USD", result.get(0).currency());
     }
+
+    @Test
+    void shouldAdjustEndDateForPeriodLessThan90Days() {
+        // Given
+        LocalDate startDate = LocalDate.of(2024, 1, 1);
+        LocalDate endDate = LocalDate.of(2024, 2, 1);  // 31 days period
+        String currency = "usd";
+        String symbol = "bitcoin";
+
+        List<List<BigDecimal>> prices = Arrays.asList(
+                Arrays.asList(BigDecimal.valueOf(1704067200000L), BigDecimal.valueOf(45000.00))
+        );
+
+        CoinPriceResponseApiDTO apiResponse = new CoinPriceResponseApiDTO(prices, null, null);
+        when(responseSpec.bodyToMono(any(ParameterizedTypeReference.class)))
+                .thenReturn(Mono.just(apiResponse));
+
+        // When
+        cryptoService.getHistoricalPriceData(symbol, startDate, endDate, currency);
+
+        // Then
+        // Verify that URI contains the adjusted end date (start date + 91 days)
+        LocalDate expectedAdjustedDate = startDate.plusDays(91);
+        long expectedUnixTimestamp = expectedAdjustedDate.atStartOfDay(ZoneId.of("UTC"))
+                .toInstant()
+                .getEpochSecond();
+
+        verify(requestHeadersUriSpec).uri(String.format(
+                "/coins/%s/market_chart/range?vs_currency=%s&from=%d&to=%d",
+                symbol,
+                currency,
+                startDate.atStartOfDay(ZoneId.of("UTC")).toInstant().getEpochSecond(),
+                expectedUnixTimestamp
+        ));
+    }
 }
