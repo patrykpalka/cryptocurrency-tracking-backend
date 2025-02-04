@@ -1,0 +1,81 @@
+package com.patrykpalka.portfolio.cryptotracker.backend.service;
+
+import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinPriceResponseApiDTO;
+import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinPriceResponseDTO;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class CryptoServiceTest {
+
+    @Mock
+    private WebClient webClient;
+
+    @Mock
+    private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
+
+    @Mock
+    private WebClient.RequestHeadersSpec requestHeadersSpec;
+
+    @Mock
+    private WebClient.ResponseSpec responseSpec;
+
+    @InjectMocks
+    private CryptoService cryptoService;
+
+    @BeforeEach
+    void setUp() {
+        cryptoService = new CryptoService(webClient);
+
+        // Set up WebClient mock chain
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+    }
+
+    @Test
+    void shouldReturnHistoricalPriceDataForLessThan90Days() {
+        // Given
+        LocalDate startDate = LocalDate.of(2024, 1, 1);
+        LocalDate endDate = LocalDate.of(2024, 3, 1);
+        String currency = "USD";
+        String symbol = "bitcoin";
+
+        List<List<BigDecimal>> prices = Arrays.asList(
+                Arrays.asList(BigDecimal.valueOf(1704067200000L), BigDecimal.valueOf(45000.00)), // 2024-01-01
+                Arrays.asList(BigDecimal.valueOf(1704153600000L), BigDecimal.valueOf(45500.00))  // 2024-01-02
+        );
+
+        CoinPriceResponseApiDTO apiResponse = new CoinPriceResponseApiDTO(prices, null, null);
+        when(responseSpec.bodyToMono(any(ParameterizedTypeReference.class)))
+                .thenReturn(Mono.just(apiResponse));
+
+        // When
+        List<CoinPriceResponseDTO> result = cryptoService.getHistoricalPriceData(symbol, startDate, endDate, currency);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(LocalDate.of(2024, 1, 1), result.get(0).date());
+        assertEquals(45000.00f, result.get(0).price());
+        assertEquals("USD", result.get(0).currency());
+    }
+}
