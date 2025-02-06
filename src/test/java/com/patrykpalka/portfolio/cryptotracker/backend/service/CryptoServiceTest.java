@@ -252,4 +252,18 @@ class CryptoServiceTest {
         // When & Then
         assertThrows(WebClientException.class, () -> cryptoService.getCryptocurrencyMarketData("bitcoin", "usd"));
     }
+
+    @Test
+    void CryptoService_getCryptocurrencyMarketData_ThrowsExceptionWhenMarketDataIsInvalidOrMalformed() {
+        // Given
+        JsonNode mockResponse = mock(JsonNode.class);
+
+        when(mockResponse.get("id")).thenReturn(new TextNode("bitcoin"));
+        when(mockResponse.get("symbol")).thenReturn(new TextNode("btc"));
+        when(mockResponse.get("market_data")).thenReturn(JsonNodeFactory.instance.objectNode());
+
+        // When & Then
+        assertThrows(CryptocurrencyDataInvalidOrMalformedException.class,
+                () -> cryptoService.getCryptocurrencyMarketData("bitcoin", "usd"));
+    }
 }
