@@ -1,6 +1,8 @@
 package com.patrykpalka.portfolio.cryptotracker.backend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.LongNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinMarketDataResponseDTO;
@@ -21,6 +23,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -218,8 +221,13 @@ class CryptoServiceTest {
     void CryptoService_getCryptocurrencyMarketData_ReturnsEmptyList() {
         // Given
         JsonNode mockResponse = mock(JsonNode.class);
+        JsonNode marketDataNode = mock(JsonNode.class);
+
         when(mockResponse.get("id")).thenReturn(new TextNode("bitcoin"));
-        when(mockResponse.get("market_data")).thenReturn(null);
+        when(mockResponse.get("market_data")).thenReturn(marketDataNode);
+        when(marketDataNode.get("market_cap")).thenReturn(JsonNodeFactory.instance.objectNode());
+        when(marketDataNode.get("total_volume")).thenReturn(JsonNodeFactory.instance.objectNode());
+        when(marketDataNode.get("circulating_supply")).thenReturn(null);
 
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
