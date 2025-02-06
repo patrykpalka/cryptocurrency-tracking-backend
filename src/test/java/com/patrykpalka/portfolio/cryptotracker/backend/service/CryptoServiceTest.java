@@ -190,10 +190,14 @@ class CryptoServiceTest {
     void CryptoService_getCryptocurrencyMarketData_ReturnsResponseDTO() {
         // Given
         JsonNode mockResponse = mock(JsonNode.class);
+        JsonNode marketDataNode = mock(JsonNode.class);
+
         when(mockResponse.get("id")).thenReturn(new TextNode("bitcoin"));
-        when(mockResponse.get("market_data").get("market_cap").get("usd")).thenReturn(new LongNode(1373546629363L));
-        when(mockResponse.get("market_data").get("total_volume").get("usd")).thenReturn(new LongNode(18867210007L));
-        when(mockResponse.get("market_data").get("circulating_supply")).thenReturn(new LongNode(19675962L));
+        when(mockResponse.get("symbol")).thenReturn(new TextNode("btc"));
+        when(mockResponse.get("market_data")).thenReturn(marketDataNode);
+        when(marketDataNode.get("market_cap").get("usd")).thenReturn(new LongNode(1373546629363L));
+        when(marketDataNode.get("total_volume").get("usd")).thenReturn(new LongNode(18867210007L));
+        when(marketDataNode.get("circulating_supply")).thenReturn(new LongNode(19675962L));
 
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
@@ -201,19 +205,19 @@ class CryptoServiceTest {
         when(responseSpec.bodyToMono(JsonNode.class)).thenReturn(Mono.just(mockResponse));
 
         // When
-        List<CoinMarketDataResponseDTO> result = cryptoService.getCryptocurrencyMarketData("bitcoin", "usd");
+        CoinMarketDataResponseDTO result = cryptoService.getCryptocurrencyMarketData("bitcoin", "usd");
 
         // Then
-        List<CoinMarketDataResponseDTO> expectedResponse = List.of(new CoinMarketDataResponseDTO(
+        CoinMarketDataResponseDTO expectedResponse = new CoinMarketDataResponseDTO(
                 "bitcoin",
+                "BTC",
                 1373546629363L,
                 18867210007L,
                 19675962,
                 "USD"
-        ));
+        );
 
         assertNotNull(result);
-        assertFalse(result.isEmpty());
         assertEquals(expectedResponse, result);
     }
 

@@ -3,6 +3,8 @@ package com.patrykpalka.portfolio.cryptotracker.backend.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record CoinMarketDataResponseDTO(
+        String id,
+
         String symbol,
 
         @JsonProperty("market_cap")
