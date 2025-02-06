@@ -1,5 +1,6 @@
 package com.patrykpalka.portfolio.cryptotracker.backend.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.http.WebSocket;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -102,5 +104,31 @@ public class CryptoService {
         }
 
         return responseList;
+    }
+
+    public CoinMarketDataResponseDTO getCryptocurrencyMarketData(String id, String currency) {
+        JsonNode apiResponse = cryptoApiClient.get()
+                .uri("/coins/" + id + "?tickers=false&community_data=false&developer_data=false")
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+
+        if (apiResponse == null || apiResponse.get("market_data") == null) {
+            throw new CryptocurrencyDataInvalidOrMalformedException("Invalid or incomplete market data for: " + id);
+        }
+
+        JsonNode marketDataNode = apiResponse.get("market_data");
+        if (marketDataNode.get("market_cap") == null || marketDataNode.get("total_volume") == null) {
+            throw new CryptocurrencyDataNotFoundException("Market data not found for: " + id);
+        }
+
+        return new CoinMarketDataResponseDTO(
+                id,
+                apiResponse.get("symbol").asText().toUpperCase(),
+                marketDataNode.get("market_cap").get(currency.toLowerCase()).asLong(),
+                marketDataNode.get("total_volume").get(currency.toLowerCase()).asLong(),
+                marketDataNode.get("circulating_supply").asLong(),
+                currency.toUpperCase()
+        );
     }
 }
