@@ -194,10 +194,10 @@ class CryptoServiceTest {
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(JsonNode.class).thenReturn(Mono.just(mockResponse)));
+        when(responseSpec.bodyToMono(JsonNode.class)).thenReturn(Mono.just(mockResponse));
 
         // When
-        List<CoinMarketDataResponseDTO> result = cryptoService.getCryptocurrencyMarketData(String symbol, String currency);
+        List<CoinMarketDataResponseDTO> result = cryptoService.getCryptocurrencyMarketData("bitcoin", "usd");
 
         // Then
         List<CoinMarketDataResponseDTO> expectedResponse = List.of(new CoinMarketDataResponseDTO(
@@ -211,5 +211,25 @@ class CryptoServiceTest {
         assertNotNull(result);
         assertFalse(result.isEmpty());
         assertEquals(expectedResponse, result);
+    }
+
+    @Test
+    void CryptoService_getCryptocurrencyMarketData_ReturnsEmptyList() {
+        // Given
+        JsonNode mockResponse = mock(JsonNode.class);
+        when(mockResponse.get("id")).thenReturn(new TextNode("bitcoin"));
+        when(mockResponse.get("market_data")).thenReturn(null);
+
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(JsonNode.class)).thenReturn(Mono.just(mockResponse));
+
+        // When
+        List<CoinMarketDataResponseDTO> result = cryptoService.getCryptocurrencyMarketData("bitcoin", "usd");
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 }
