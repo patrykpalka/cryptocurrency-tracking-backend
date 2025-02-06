@@ -1,5 +1,9 @@
 package com.patrykpalka.portfolio.cryptotracker.backend.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.LongNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinMarketDataResponseDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinPriceResponseApiDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinPriceResponseDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -176,5 +180,36 @@ class CryptoServiceTest {
 
         // Then
         assertEquals("EUR", result.get(0).currency());
+    }
+
+    @Test
+    void CryptoService_getCryptocurrencyMarketData_ReturnsResponseDTO() {
+        // Given
+        JsonNode mockResponse = mock(JsonNode.class);
+        when(mockResponse.get("id")).thenReturn(new TextNode("bitcoin"));
+        when(mockResponse.get("market_data").get("market_cap").get("usd")).thenReturn(new LongNode(1373546629363L));
+        when(mockResponse.get("market_data").get("total_volume").get("usd")).thenReturn(new LongNode(18867210007L));
+        when(mockResponse.get("market_data").get("circulating_supply")).thenReturn(new LongNode(19675962L));
+
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(JsonNode.class).thenReturn(Mono.just(mockResponse)));
+
+        // When
+        List<CoinMarketDataResponseDTO> result = cryptoService.getCryptocurrencyMarketData(String symbol, String currency);
+
+        // Then
+        List<CoinMarketDataResponseDTO> expectedResponse = List.of(new CoinMarketDataResponseDTO(
+                "bitcoin",
+                1373546629363L,
+                18867210007L,
+                19675962,
+                "USD"
+        ));
+
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(expectedResponse, result);
     }
 }
