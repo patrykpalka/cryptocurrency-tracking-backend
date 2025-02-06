@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientException;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -231,5 +232,15 @@ class CryptoServiceTest {
         // Then
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void CryptoService_getCryptocurrencyMarketData_ExternalAPIFailure() {
+        // Given
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString())).thenThrow(WebClientException.class);
+
+        // When & Then
+        assertThrows(WebClientException.class, () -> cryptoService.getCryptocurrencyMarketData("bitcoin", "usd"));
     }
 }
