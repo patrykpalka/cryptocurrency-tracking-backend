@@ -222,7 +222,7 @@ class CryptoServiceTest {
     }
 
     @Test
-    void CryptoService_getCryptocurrencyMarketData_ReturnsEmptyList() {
+    void CryptoService_getCryptocurrencyMarketData_ThrowsExceptionWhenMarketDataIsEmpty() {
         // Given
         JsonNode mockResponse = mock(JsonNode.class);
         JsonNode marketDataNode = mock(JsonNode.class);
@@ -238,12 +238,9 @@ class CryptoServiceTest {
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(JsonNode.class)).thenReturn(Mono.just(mockResponse));
 
-        // When
-        List<CoinMarketDataResponseDTO> result = cryptoService.getCryptocurrencyMarketData("bitcoin", "usd");
-
-        // Then
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
+        // When & Then
+        assertThrows(CryptocurrencyDataNotFoundException.class,
+                () -> cryptoService.getCryptocurrencyMarketData("bitcoin", "usd"));
     }
 
     @Test
