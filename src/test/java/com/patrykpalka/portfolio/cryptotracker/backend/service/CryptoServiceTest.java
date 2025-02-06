@@ -1,13 +1,14 @@
 package com.patrykpalka.portfolio.cryptotracker.backend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.LongNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinMarketDataResponseDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinPriceResponseApiDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinPriceResponseDTO;
+import com.patrykpalka.portfolio.cryptotracker.backend.exception.CryptocurrencyDataInvalidOrMalformedException;
+import com.patrykpalka.portfolio.cryptotracker.backend.exception.CryptocurrencyDataNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +24,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;

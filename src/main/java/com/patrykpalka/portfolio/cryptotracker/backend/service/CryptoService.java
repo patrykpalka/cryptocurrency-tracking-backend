@@ -2,6 +2,8 @@ package com.patrykpalka.portfolio.cryptotracker.backend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.*;
+import com.patrykpalka.portfolio.cryptotracker.backend.exception.CryptocurrencyDataInvalidOrMalformedException;
+import com.patrykpalka.portfolio.cryptotracker.backend.exception.CryptocurrencyDataNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -10,7 +12,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.http.WebSocket;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;

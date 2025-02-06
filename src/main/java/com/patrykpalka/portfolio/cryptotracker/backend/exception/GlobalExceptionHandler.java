@@ -21,6 +21,16 @@ public class GlobalExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(CryptocurrencyDataInvalidOrMalformedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleCryptocurrencyDataInvalidOrMalformedException(CryptocurrencyDataInvalidOrMalformedException e, HttpServletRequest request) {
+        return buildErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST, request, "CryptocurrencyDataInvalidOrMalformedException");
+    }
+
+    @ExceptionHandler(CryptocurrencyDataNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleCryptocurrencyDataNotFoundException(CryptocurrencyDataNotFoundException e, HttpServletRequest request) {
+        return buildErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND, request, "CryptocurrencyDataNotFoundException");
+    }
+
     @ExceptionHandler(WebClientException.class)
     public ResponseEntity<ErrorResponseDTO> handleWebClientException(WebClientException e, HttpServletRequest request) {
         return buildErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE, request, "WebClientException");
