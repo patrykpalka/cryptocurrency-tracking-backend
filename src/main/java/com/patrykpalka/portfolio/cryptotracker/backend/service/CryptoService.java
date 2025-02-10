@@ -1,6 +1,9 @@
 package com.patrykpalka.portfolio.cryptotracker.backend.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.*;
+import com.patrykpalka.portfolio.cryptotracker.backend.exception.CryptocurrencyDataInvalidOrMalformedException;
+import com.patrykpalka.portfolio.cryptotracker.backend.exception.CryptocurrencyDataNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -78,8 +81,7 @@ public class CryptoService {
                 .block();
 
         if (apiResponse == null || apiResponse.prices() == null) {
-            LOGGER.error("Received null or empty response from API for symbol: {}", symbol);
-            throw new RuntimeException("Received null or empty response from API");
+            throw new RuntimeException("Received null or empty response from API for symbol: " + symbol);
         }
 
         LOGGER.debug("API response: {}", apiResponse);
@@ -102,5 +104,37 @@ public class CryptoService {
         }
 
         return responseList;
+    }
+
+    public CoinMarketDataResponseDTO getCryptocurrencyMarketData(String id, String currency) {
+        String urlPath = "/coins/" + id + "?tickers=false&community_data=false&developer_data=false";
+
+        LOGGER.debug("Calling external API: {}", urlPath);
+
+        JsonNode apiResponse = cryptoApiClient.get()
+                .uri(urlPath)
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+
+        if (apiResponse == null || apiResponse.get("symbol") == null || apiResponse.get("market_data") == null) {
+            throw new CryptocurrencyDataInvalidOrMalformedException("Invalid or incomplete market data for: " + id);
+        }
+
+        JsonNode marketDataNode = apiResponse.get("market_data");
+        if (marketDataNode.get("market_cap") == null ||
+                marketDataNode.get("total_volume") == null ||
+                marketDataNode.get("circulating_supply") == null) {
+            throw new CryptocurrencyDataNotFoundException("Market data not found for: " + id);
+        }
+
+        return new CoinMarketDataResponseDTO(
+                id,
+                apiResponse.get("symbol").asText().toUpperCase(),
+                marketDataNode.get("market_cap").get(currency.toLowerCase()).asLong(),
+                marketDataNode.get("total_volume").get(currency.toLowerCase()).asLong(),
+                marketDataNode.get("circulating_supply").asLong(),
+                currency.toUpperCase()
+        );
     }
 }

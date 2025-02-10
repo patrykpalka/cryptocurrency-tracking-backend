@@ -1,5 +1,6 @@
 package com.patrykpalka.portfolio.cryptotracker.backend.controller;
 
+import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinMarketDataResponseDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinPriceResponseDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinsListDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CryptoPricesResponseDTO;
@@ -49,5 +50,16 @@ public class CryptoController {
         List<CoinPriceResponseDTO> pricesList = cryptoService.getHistoricalPriceData(symbol, start, end, currency);
         LOGGER.info("Successfully fetched {} historical prices", pricesList.size());
         return ResponseEntity.ok(pricesList);
+    }
+
+    @GetMapping("/market/{symbol}")
+    private ResponseEntity<CoinMarketDataResponseDTO> getCryptocurrencyMarketData(
+            @PathVariable String symbol,
+            @RequestParam (required = false, defaultValue = "usd") String currency
+    ) {
+        LOGGER.info("Fetching market data for symbol: {} and currency: {}", symbol, currency);
+        CoinMarketDataResponseDTO marketData = cryptoService.getCryptocurrencyMarketData(symbol, currency);
+        LOGGER.info("Successfully fetched market data: {}", marketData);
+        return ResponseEntity.ok(marketData);
     }
 }

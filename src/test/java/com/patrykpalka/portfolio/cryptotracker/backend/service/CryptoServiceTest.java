@@ -1,7 +1,14 @@
 package com.patrykpalka.portfolio.cryptotracker.backend.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.LongNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinMarketDataResponseDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinPriceResponseApiDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinPriceResponseDTO;
+import com.patrykpalka.portfolio.cryptotracker.backend.exception.CryptocurrencyDataInvalidOrMalformedException;
+import com.patrykpalka.portfolio.cryptotracker.backend.exception.CryptocurrencyDataNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +17,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -48,7 +57,7 @@ class CryptoServiceTest {
         // Set up WebClient mock chain
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        lenient().when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
     }
 
     @Test
@@ -176,5 +185,96 @@ class CryptoServiceTest {
 
         // Then
         assertEquals("EUR", result.get(0).currency());
+    }
+
+    @Test
+    void CryptoService_getCryptocurrencyMarketData_ReturnsResponseDTO() {
+        // Given
+        JsonNode mockResponse = mock(JsonNode.class);
+        JsonNode marketDataNode = mock(JsonNode.class);
+        JsonNode marketCapNode = mock(JsonNode.class);
+        JsonNode totalVolumeNode = mock(JsonNode.class);
+
+        when(mockResponse.get("symbol")).thenReturn(new TextNode("btc"));
+        when(mockResponse.get("market_data")).thenReturn(marketDataNode);
+
+        when(marketDataNode.get("market_cap")).thenReturn(marketCapNode);
+        when(marketCapNode.get("usd")).thenReturn(new LongNode(1373546629363L));
+
+        when(marketDataNode.get("total_volume")).thenReturn(totalVolumeNode);
+        when(totalVolumeNode.get("usd")).thenReturn(new LongNode(18867210007L));
+
+        when(marketDataNode.get("circulating_supply")).thenReturn(new LongNode(19675962L));
+
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(JsonNode.class)).thenReturn(Mono.just(mockResponse));
+
+        // When
+        CoinMarketDataResponseDTO result = cryptoService.getCryptocurrencyMarketData("bitcoin", "usd");
+
+        // Then
+        CoinMarketDataResponseDTO expectedResponse = new CoinMarketDataResponseDTO(
+                "bitcoin",
+                "BTC",
+                1373546629363L,
+                18867210007L,
+                19675962,
+                "USD"
+        );
+
+        assertNotNull(result);
+        assertEquals(expectedResponse, result);
+    }
+
+    @Test
+    void CryptoService_getCryptocurrencyMarketData_ThrowsExceptionWhenMarketDataIsEmpty() {
+        // Given
+        JsonNode mockResponse = mock(JsonNode.class);
+        JsonNode marketDataNode = mock(JsonNode.class);
+
+        when(mockResponse.get("symbol")).thenReturn(new TextNode("btc"));
+        when(mockResponse.get("market_data")).thenReturn(marketDataNode);
+        when(marketDataNode.get("market_cap")).thenReturn(JsonNodeFactory.instance.objectNode());
+        when(marketDataNode.get("total_volume")).thenReturn(JsonNodeFactory.instance.objectNode());
+        when(marketDataNode.get("circulating_supply")).thenReturn(null);
+
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(JsonNode.class)).thenReturn(Mono.just(mockResponse));
+
+        // When & Then
+        assertThrows(CryptocurrencyDataNotFoundException.class,
+                () -> cryptoService.getCryptocurrencyMarketData("bitcoin", "usd"));
+    }
+
+    @Test
+    void CryptoService_getCryptocurrencyMarketData_ExternalAPIFailure() {
+        // Given
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString())).thenThrow(WebClientResponseException.class);
+
+        // When & Then
+        assertThrows(WebClientResponseException.class,
+                () -> cryptoService.getCryptocurrencyMarketData("bitcoin", "usd"));
+    }
+
+    @Test
+    void CryptoService_getCryptocurrencyMarketData_ThrowsExceptionWhenMarketDataIsInvalidOrMalformed() {
+        // Given
+        JsonNode mockResponse = mock(JsonNode.class);
+        when(mockResponse.get("symbol")).thenReturn(new TextNode("btc"));
+        when(mockResponse.get("market_data")).thenReturn(null);
+
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(JsonNode.class)).thenReturn(Mono.just(mockResponse));
+
+        // When & Then
+        assertThrows(CryptocurrencyDataInvalidOrMalformedException.class,
+                () -> cryptoService.getCryptocurrencyMarketData("bitcoin", "usd"));
     }
 }
