@@ -254,10 +254,11 @@ class CryptoServiceTest {
     void CryptoService_getCryptocurrencyMarketData_ExternalAPIFailure() {
         // Given
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString())).thenThrow(WebClientException.class);
+        when(requestHeadersUriSpec.uri(anyString())).thenThrow(WebClientResponseException.class);
 
         // When & Then
-        assertThrows(WebClientException.class, () -> cryptoService.getCryptocurrencyMarketData("bitcoin", "usd"));
+        assertThrows(WebClientResponseException.class,
+                () -> cryptoService.getCryptocurrencyMarketData("bitcoin", "usd"));
     }
 
     @Test
