@@ -81,8 +81,7 @@ public class CryptoService {
                 .block();
 
         if (apiResponse == null || apiResponse.prices() == null) {
-            LOGGER.error("Received null or empty response from API for symbol: {}", symbol);
-            throw new RuntimeException("Received null or empty response from API");
+            throw new RuntimeException("Received null or empty response from API for symbol: " + symbol);
         }
 
         LOGGER.debug("API response: {}", apiResponse);
@@ -108,8 +107,12 @@ public class CryptoService {
     }
 
     public CoinMarketDataResponseDTO getCryptocurrencyMarketData(String id, String currency) {
+        String urlPath = "/coins/" + id + "?tickers=false&community_data=false&developer_data=false";
+
+        LOGGER.debug("Calling external API: {}", urlPath);
+
         JsonNode apiResponse = cryptoApiClient.get()
-                .uri("/coins/" + id + "?tickers=false&community_data=false&developer_data=false")
+                .uri(urlPath)
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
