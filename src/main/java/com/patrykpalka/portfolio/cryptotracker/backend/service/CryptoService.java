@@ -114,12 +114,14 @@ public class CryptoService {
                 .bodyToMono(JsonNode.class)
                 .block();
 
-        if (apiResponse == null || apiResponse.get("market_data") == null) {
+        if (apiResponse == null || apiResponse.get("symbol") == null || apiResponse.get("market_data") == null) {
             throw new CryptocurrencyDataInvalidOrMalformedException("Invalid or incomplete market data for: " + id);
         }
 
         JsonNode marketDataNode = apiResponse.get("market_data");
-        if (marketDataNode.get("market_cap") == null || marketDataNode.get("total_volume") == null) {
+        if (marketDataNode.get("market_cap") == null ||
+                marketDataNode.get("total_volume") == null ||
+                marketDataNode.get("circulating_supply") == null) {
             throw new CryptocurrencyDataNotFoundException("Market data not found for: " + id);
         }
 

@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -56,7 +57,7 @@ class CryptoServiceTest {
         // Set up WebClient mock chain
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        lenient().when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
     }
 
     @Test
@@ -233,7 +234,7 @@ class CryptoServiceTest {
         JsonNode mockResponse = mock(JsonNode.class);
         JsonNode marketDataNode = mock(JsonNode.class);
 
-        when(mockResponse.get("id")).thenReturn(new TextNode("bitcoin"));
+        when(mockResponse.get("symbol")).thenReturn(new TextNode("btc"));
         when(mockResponse.get("market_data")).thenReturn(marketDataNode);
         when(marketDataNode.get("market_cap")).thenReturn(JsonNodeFactory.instance.objectNode());
         when(marketDataNode.get("total_volume")).thenReturn(JsonNodeFactory.instance.objectNode());
