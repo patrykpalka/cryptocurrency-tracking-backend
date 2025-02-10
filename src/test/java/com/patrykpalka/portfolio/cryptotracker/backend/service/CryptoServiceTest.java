@@ -191,12 +191,18 @@ class CryptoServiceTest {
         // Given
         JsonNode mockResponse = mock(JsonNode.class);
         JsonNode marketDataNode = mock(JsonNode.class);
+        JsonNode marketCapNode = mock(JsonNode.class);
+        JsonNode totalVolumeNode = mock(JsonNode.class);
 
-        when(mockResponse.get("id")).thenReturn(new TextNode("bitcoin"));
         when(mockResponse.get("symbol")).thenReturn(new TextNode("btc"));
         when(mockResponse.get("market_data")).thenReturn(marketDataNode);
-        when(marketDataNode.get("market_cap").get("usd")).thenReturn(new LongNode(1373546629363L));
-        when(marketDataNode.get("total_volume").get("usd")).thenReturn(new LongNode(18867210007L));
+
+        when(marketDataNode.get("market_cap")).thenReturn(marketCapNode);
+        when(marketCapNode.get("usd")).thenReturn(new LongNode(1373546629363L));
+
+        when(marketDataNode.get("total_volume")).thenReturn(totalVolumeNode);
+        when(totalVolumeNode.get("usd")).thenReturn(new LongNode(18867210007L));
+
         when(marketDataNode.get("circulating_supply")).thenReturn(new LongNode(19675962L));
 
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
