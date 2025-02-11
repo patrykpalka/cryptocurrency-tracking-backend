@@ -3,6 +3,7 @@ package com.patrykpalka.portfolio.cryptotracker.backend.validation;
 import com.patrykpalka.portfolio.cryptotracker.backend.exception.ExternalApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -23,8 +24,10 @@ public class CurrencyValidationService {
         this.cryptoApiClient = cryptoApiClient;
     }
 
+    @Cacheable(value = SUPPORTED_CURRENCIES_CACHE, key = "'currencies'", unless = "#result.isEmpty()")
     public Set<String> getSupportedCurrencies() {
         Set<String> currencies = fetchSupportedCurrencies();
+        LOGGER.info("Successfully fetched supported currencies. Count: {}", currencies.size());
         return currencies;
     }
 
