@@ -21,6 +21,11 @@ public class GlobalExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(ExternalApiException.class)
+    public ResponseEntity<ErrorResponseDTO> handleExternalApiException(ExternalApiException e, HttpServletRequest request) {
+        return buildErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND, request, "ExternalApiException");
+    }
+
     @ExceptionHandler(CryptocurrencyDataInvalidOrMalformedException.class)
     public ResponseEntity<ErrorResponseDTO> handleCryptocurrencyDataInvalidOrMalformedException(CryptocurrencyDataInvalidOrMalformedException e, HttpServletRequest request) {
         return buildErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST, request, "CryptocurrencyDataInvalidOrMalformedException");
