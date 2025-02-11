@@ -3,8 +3,10 @@ package com.patrykpalka.portfolio.cryptotracker.backend.validation;
 import com.patrykpalka.portfolio.cryptotracker.backend.exception.ExternalApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -29,6 +31,12 @@ public class CurrencyValidationService {
         Set<String> currencies = fetchSupportedCurrencies();
         LOGGER.info("Successfully fetched supported currencies. Count: {}", currencies.size());
         return currencies;
+    }
+
+    @Scheduled(cron = "0 0 */12 * * *") // Evict currencies every 12 hours to have up-to-date data
+    @CacheEvict(value = SUPPORTED_CURRENCIES_CACHE, allEntries = true)
+    public void evictSupportedCurrencies() {
+        LOGGER.info("Evicting supported currencies cache");
     }
 
     private Set<String> fetchSupportedCurrencies() {
