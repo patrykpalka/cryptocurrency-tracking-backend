@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(CurrencyValidator.class)
+@Constraint(validatedBy = CurrencyValidator.class)
 public @interface ValidCurrency {
     String message() default "Invalid currency";
 }
