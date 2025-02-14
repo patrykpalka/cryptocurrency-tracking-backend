@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.reactive.function.client.WebClientException;
 
@@ -20,6 +21,11 @@ import java.util.Objects;
 public class GlobalExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponseDTO>handleHandlerMethodValidationException(HandlerMethodValidationException e, HttpServletRequest request) {
+        return buildErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST, request, "HandlerMethodValidationException");
+    }
 
     @ExceptionHandler(ExternalApiException.class)
     public ResponseEntity<ErrorResponseDTO> handleExternalApiException(ExternalApiException e, HttpServletRequest request) {
