@@ -5,6 +5,7 @@ import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinPriceResponseDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CoinsListDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.dto.CryptoPricesResponseDTO;
 import com.patrykpalka.portfolio.cryptotracker.backend.service.CryptoService;
+import com.patrykpalka.portfolio.cryptotracker.backend.validation.ValidCurrency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class CryptoController {
     @GetMapping("/prices")
     private ResponseEntity<List<CryptoPricesResponseDTO>> getCryptoPrices(
             @RequestParam(required = false) String symbols,
-            @RequestParam(required = false, defaultValue = "usd") String currency
+            @RequestParam(required = false, defaultValue = "usd") @ValidCurrency String currency
     ) {
         List<CryptoPricesResponseDTO> pricesList = cryptoService.getCryptoPrices(symbols, currency);
         return ResponseEntity.ok(pricesList);
@@ -44,7 +45,7 @@ public class CryptoController {
             @PathVariable String symbol,
             @RequestParam LocalDate start,
             @RequestParam LocalDate end,
-            @RequestParam(required = false, defaultValue = "usd") String currency
+            @RequestParam(required = false, defaultValue = "usd") @ValidCurrency String currency
     ) {
         LOGGER.info("Fetching historical price data for symbol: {}, start: {}, end: {}, currency: {}", symbol, start, end, currency);
         List<CoinPriceResponseDTO> pricesList = cryptoService.getHistoricalPriceData(symbol, start, end, currency);
@@ -55,7 +56,7 @@ public class CryptoController {
     @GetMapping("/market/{symbol}")
     private ResponseEntity<CoinMarketDataResponseDTO> getCryptocurrencyMarketData(
             @PathVariable String symbol,
-            @RequestParam (required = false, defaultValue = "usd") String currency
+            @RequestParam (required = false, defaultValue = "usd") @ValidCurrency String currency
     ) {
         LOGGER.info("Fetching market data for symbol: {} and currency: {}", symbol, currency);
         CoinMarketDataResponseDTO marketData = cryptoService.getCryptocurrencyMarketData(symbol, currency);
