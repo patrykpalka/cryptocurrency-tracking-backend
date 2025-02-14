@@ -1,7 +1,6 @@
 package com.patrykpalka.portfolio.cryptotracker.backend.validation;
 
 import com.patrykpalka.portfolio.cryptotracker.backend.exception.ExternalApiException;
-import jakarta.validation.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
@@ -13,7 +12,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
